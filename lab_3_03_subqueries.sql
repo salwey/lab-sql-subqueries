@@ -85,7 +85,23 @@ where fa.actor_id in
                         limit 1) x
   );
 
+-- alternative without using order/limit
 
+select f.film_id, f.title
+from sakila.film f
+inner join sakila.film_actor fa on f.film_id = fa.film_id
+where fa.actor_id in 
+             (select actor_id from (
+                      select actor_id, count(*) appearances 
+                      from sakila.film_actor fa
+                      group by 1
+                      having appearances = (select max(appearances) from (select actor_id, count(*) as appearances
+                                                                          from sakila.film_actor fa 
+                                                                          group by 1) x
+                      )) x
+  );
+ 
+ 
 -- 7. Films rented by most profitable customer. You can use the customer table and payment table to find the
 -- most profitable customer ie the customer that has made the largest sum of payments
 select * from sakila.payment limit 10;
@@ -136,8 +152,3 @@ select * from(
     group by 1) x
     ) y
 where amount_spent > avg_amount_spent;
-
-
-
-
-
